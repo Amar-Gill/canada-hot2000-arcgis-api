@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <title>Stonks go up</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, sans-serif;
+            font-size: 14px;
+            color: #333;
+        }
+
+        #content .map path {
+            fill: #ddd;
+            stroke: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+    extra extra stonks go up!
+    <div id="content">
+        <svg width="800px" height="400px">
+            <g class="map"></g>
+        </svg>
+    </div>
+
+    <script>
+        let geojson;
+
+        const projection = d3.geoEquirectangular()
+            .scale(200)
+            .translate([200, 150]);
+        const geoGenerator = d3.geoPath()
+            .projection(projection);
+
+        
+
+        function update(geojson) {
+            var u = d3.select('#content g.map')
+                .selectAll('path')
+                .data(geojson.features);
+
+            u.enter()
+                .append('path')
+                .attr('d', geoGenerator);
+        }
+
+
+        const loadGeojson = e => {
+            const formData = new FormData();
+
+            formData.append("f", "geojson");
+            formData.append("where", "1=1");
+            formData.append("outSr", "4326");
+            formData.append("outFields", "OBJECTID, Shape, Name, Prov, Latitude, HDD_Below_18C, DHDBT, DCDBT, DCWBT");
+
+
+            // source: https://open.canada.ca/data/en/dataset/4672733b-bbb6-4299-a57f-f19ab475ac11
+            const data = fetch("https://maps-cartes.services.geo.ca/server_serveur/rest/services/NRCan/Carte_climatique_HOT2000_Climate_Map_EN/MapServer/1/query", {
+                method: "POST",
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    geojson = data;
+                    console.log(geojson);
+                    update(geojson);
+                })
+                .catch(err => console.log(err))
+        };
+
+        loadGeojson();
+
+    </script>
+
+
+</body>
+
+</html>

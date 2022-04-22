@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canada HOT2000 Locations</title>
+    <style>
+        html {
+            box-sizing: border-box;
+        }
+
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+
+        html,
+        body,
+        #view-div {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100;
+        }
+    </style>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.18/"></script>
+    <script>
+        require(["esri/Map", "esri/views/MapView", "esri/layers/FeatureLayer", "esri/widgets/Search"], function (Map, MapView, FeatureLayer, Search) {
+            let map = new Map({
+                basemap: "topo-vector"
+            });
+
+            let view = new MapView({
+                container: "view-div",
+                map: map,
+                center: [-79.4163, 43.7001], // longitude, latitude
+                zoom: 6
+            });
+
+            const popupTemplateContent =
+                "Latitude: {Latitude}<br/>" +
+                "Heating Degree Days (18&degC): {HDD_Below_18C}<br/>" +
+                "Design Heating Dry Bulb Temperature: {DHDBT}&degC <br/> " +
+                "Design Cooling Dry Bulb Temperature: {DCDBT}&degC<br/>" +
+                "Design Cooling Wet Bulb Temperature: {DCWBT}&degC"
+
+            // source: https://open.canada.ca/data/en/dataset/4672733b-bbb6-4299-a57f-f19ab475ac11
+            let climateZones = new FeatureLayer({
+                url: "https://maps-cartes.services.geo.ca/server_serveur/rest/services/NRCan/Carte_climatique_HOT2000_Climate_Map_EN/MapServer/1",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        outline: {
+                            color: "white",
+                            style: "dash"
+                        }
+                    }
+                },
+                popupTemplate: {
+                    title: "Weather Station: {Name} - {Prov}",
+                    content: popupTemplateContent
+                }
+            });
+
+            map.add(climateZones, 0);
+
+            // Search widget
+            var search = new Search({
+                view: view
+            });
+
+            // Add the trailheads as a search source
+            // search.sources.push({
+            //     layer: climateZones,
+            //     searchFields: ["Name, Prov"],
+            //     displayField: "Name",
+            //     exactMatch: false,
+            //     outFields: ["Name", "Prov", "Latitude"],
+            //     resultGraphicEnabled: true,
+            //     name: "Weather Station",
+            //     placeholder: "Example: Toronto, ON",
+            // });
+
+            view.ui.add(search, "top-right");
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="view-div"></div>
+</body>
+
+</html>
